@@ -167,6 +167,8 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // let user can move focus correctly in listview by direction key (left,right,up,down,enter,back).
+        getListView().setFocusable(false);
         setEmptyText("没有安装插件");
         setListAdapter(adapter);
         setListShown(false);
