@@ -19,6 +19,13 @@ android {
             keyPassword readProperty("key.alias.password", "key.alias.password")
             storePassword readProperty("key.store.password", "key.store.password")
         }
+
+        ykConfig {
+            storeFile file("youku_android_key.keystore")
+            storePassword "wuxian_youku_android"
+            keyAlias "youku_android_key.keystore"
+            keyPassword "wuxian_youku_android"
+        }
     }
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -48,14 +55,22 @@ android {
 
     defaultConfig {
         multiDexEnabled = false
+
+
+        applicationId 'com.cibn.tv'
     }
 
     buildTypes {
         release {
             minifyEnabled true
             pseudoLocalesEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), "proguard-project.txt"
-            signingConfig signingConfigs.MySignConfig
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), "proguard-project.txt"
+            signingConfig signingConfigs.ykConfig
+
+        }
+
+        debug {
+            signingConfig signingConfigs.ykConfig
         }
     }
 

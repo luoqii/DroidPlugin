@@ -243,7 +243,9 @@ class StaticProcessList {
     }
 
     List<String> getProcessNames() {
-        return new ArrayList<String>(items.keySet());
+        List<String> processes = new ArrayList<String>(items.keySet());
+        Collections.sort(processes);
+        return processes;
     }
 
     List<ActivityInfo> getActivityInfoForProcessName(String processName) {

@@ -1,12 +1,19 @@
 package com.example.TestPlugin;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PermissionInfo;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.res.AssetManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,21 +22,32 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+
+import com.morgoo.droidplugin.am.ComponentSelector;
 import com.morgoo.droidplugin.pm.PluginManager;
 import com.morgoo.helper.Log;
+import com.morgoo.helper.compat.PackageManagerCompat;
+import com.morgoo.helper.compat.ProcessCompat;
+import com.morgoo.helper.compat.UserHandleCompat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class MyActivity extends ActionBarActivity {
+public class MyActivity extends
+//        ActionBar
+        FragmentActivity {
 
 
     private static final String TAG = "MyActivity";
@@ -66,10 +84,119 @@ public class MyActivity extends ActionBarActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mFragmentStatePagerAdapter);
+
+//        init();
+
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+
+        ProcessCompat.setArgV0("bysong.name");
+//        DdmHandleAppNameCompat.setAppName("new ddms name", UserHandleCompat.myUserId());
+
+//        setContentView(R.layout.main);
+
+
+        new AsyncTask<Void, Void, Void>(){
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                while (!PluginManager.getInstance().isConnected()) {
+
+                    try {
+                        Log.d(TAG, "sleep 1000");
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+//                    Toast.makeText(MyActivity.this, "插件服务正在初始化，请稍后再试。。。", Toast.LENGTH_SHORT).show();
+                }
+
+                try {
+                    List<PackageInfo> pgks = PluginManager.getInstance().getInstalledPackages(0);
+                    if (pgks != null && pgks.size() > 0){
+                        return null;
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+
+                File dir = new File(Environment.getExternalStorageDirectory().getPath() + "/youku_plugin");
+                dir = getDir("youku_plugin", 0);
+                dir.mkdirs();
+                for (File f: dir.listFiles()) {
+                    f.delete();
+                }
+                extractAssetFile(getAssets(), "extract2sdcard", dir);
+                for (File f: dir.listFiles()) {
+                    try {
+                        Log.d(TAG, "install apk: " + f);
+                        PluginManager.getInstance().installPackage(f.getPath(), PackageManagerCompat.INSTALL_REPLACE_EXISTING);
+
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+
+                try {
+                    PackageManager pm = MyActivity.this.getPackageManager();
+                    Intent intent = null;
+                    intent = pm.getLaunchIntentForPackage(PluginManager.getInstance().getInstalledPackages(0).get(0).packageName);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+//                mViewPager = (ViewPager) findViewById(R.id.pager);
+//                mViewPager.setAdapter(mFragmentStatePagerAdapter);
+            }
+        }.execute((Void[]) null);
 //        getPerms();
+    }
+
+    private void init() {
+
+        ComponentSelector.getInsance().setHook(new ComponentSelector.Hook() {
+            @Override
+            public ActivityInfo selectStubActivityInfo(ActivityInfo targetActivityInfo) {
+                return null;
+            }
+
+            @Override
+            public ServiceInfo selectStubServiceInfo(ServiceInfo targetActivityInfo) {
+                try {
+                    if ("com.youku.pushsdk.service.PushService".equals(targetActivityInfo.name)) {
+                        return getPackageManager().getServiceInfo(new ComponentName(getPackageName(), "com.example.TestPlugin.stub.Stub$PushService"), 0);
+                    }
+                    if ("com.youku.service.acc.AcceleraterService".equals(targetActivityInfo.name)){
+                        return getPackageManager().getServiceInfo(new ComponentName(getPackageName(), "com.example.TestPlugin.stub.Stub$AcceleraterService"), 0);
+                    }
+                } catch (NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            public ProviderInfo selectStubProviderInfo(ProviderInfo targetActivityInfo) {
+                return null;
+            }
+
+            @Override
+            public String getProcessName(String stubProcessName) {
+                if ("com.cibn.tv.launcher.debug".equals(stubProcessName)){
+                    return "com.cibn.tv.bysong" + ":PluginP7";
+                }
+                return null;
+            }
+        });
     }
 
     private void getPerms() {
@@ -172,5 +299,57 @@ public class MyActivity extends ActionBarActivity {
 
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    public static ArrayList<File> extractAssetFile(AssetManager am, String assetDir,
+                                                   File destDir) {
+        ArrayList<File> copiedFiles = new ArrayList<File>();
+        try {
+            destDir.mkdirs();
+            String[] files = am.list(assetDir);
+            if (null == files || files.length == 0){
+                //==========123456789012345678
+                android.util.Log.w(TAG, "empty assets dir:" + assetDir);
+            } else {
+                for (String fp : files) {
+                    File destF = new File(destDir, fp);
+                    destF.delete();
+                    destF.createNewFile();
+                    copyStream(am.open(assetDir + "/" + fp),
+                            new FileOutputStream(destF));
+                    copiedFiles.add(destF);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return copiedFiles;
+    }
+
+    public static void copyStream(InputStream in, OutputStream out){
+        try {
+            int byteCount = 1024 * 1024;
+            byte[] buffer = new byte[byteCount];
+            int count = 0;
+            while ((count = in.read(buffer, 0, byteCount)) != -1){
+                out.write(buffer, 0, count);
+            }
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                in.close();
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

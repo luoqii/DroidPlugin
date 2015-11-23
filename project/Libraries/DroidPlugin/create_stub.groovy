@@ -210,7 +210,7 @@ activityCount = ["standard"      : 10,
               "singleTop"     : 10,
               "singleTask"    : 10]
 
-create_activity(4, // process count
+create_activity(7, // process count
                 6, // service count
                 1, // provider count
                  [  "standard"      : 10,

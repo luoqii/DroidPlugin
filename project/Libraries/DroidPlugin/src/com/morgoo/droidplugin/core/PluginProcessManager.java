@@ -52,6 +52,7 @@ import com.morgoo.helper.compat.ActivityThreadCompat;
 import com.morgoo.helper.compat.CompatibilityInfoCompat;
 import com.morgoo.helper.Log;
 import com.morgoo.helper.compat.ProcessCompat;
+import com.morgoo.helper.compat.UserHandleCompat;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -224,6 +225,8 @@ public class PluginProcessManager {
                         found = true;
                     }
                     ProcessCompat.setArgV0(pluginInfo.processName);
+                    Log.d(TAG, "setArgV0 " + pluginInfo.processName);
+//                    DdmHandleAppNameCompat.setAppName(pluginInfo.processName, UserHandleCompat.myUserId());
                 }
             }
         }

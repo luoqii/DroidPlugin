@@ -22,7 +22,6 @@
 
 package com.morgoo.droidplugin.hook.handle;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
@@ -45,6 +44,7 @@ import com.morgoo.droidplugin.hook.binder.IWindowManagerBinderHook;
 import com.morgoo.droidplugin.hook.proxy.IPackageManagerHook;
 import com.morgoo.droidplugin.pm.PluginManager;
 import com.morgoo.helper.Log;
+import com.morgoo.helper.compat.UserHandleCompat;
 
 /**
  * Created by Andy Zhang(zhangyong232@gmail.com) on 2014/12/5.
@@ -84,8 +84,11 @@ public class PluginInstrumentation extends Instrumentation {
             } catch (RemoteException e) {
                 Log.e(TAG, "callActivityOnCreate:onActivityCreated", e);
             }
+
+
         }
 
+//        DdmHandleAppNameCompat.setAppName("plugin all name", UserHandleCompat.myUserId());
 
         if (mTarget != null) {
             mTarget.callActivityOnCreate(activity, icicle);
@@ -105,9 +108,7 @@ public class PluginInstrumentation extends Instrumentation {
                     RunningActivities.onActivtyCreate(activity, targetInfo, stubInfo);
                     activity.setRequestedOrientation(targetInfo.screenOrientation);
                     PluginManager.getInstance().onActivityCreated(stubInfo, targetInfo);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        fixTaskDescription(activity, targetInfo);
-                    }
+                    fixTaskDescription(activity, targetInfo);
                 }
             }
         } catch (Exception e) {
@@ -132,7 +133,6 @@ public class PluginInstrumentation extends Instrumentation {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void fixTaskDescription(Activity activity, ActivityInfo targetInfo) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PackageManager pm = mHostContext.getPackageManager();

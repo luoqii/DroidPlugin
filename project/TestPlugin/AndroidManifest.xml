@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.example.TestPlugin"
-          android:versionCode="1"
+          android:versionCode="100000000"
           android:versionName="1.0">
     <uses-sdk android:minSdkVersion="9"/>
-    <application android:name="com.morgoo.droidplugin.PluginApplication" android:label="@string/app_name"
+    <application android:name="com.example.TestPlugin.App" android:label="@string/app_name"
                  android:icon="@drawable/ic_launcher" android:theme="@style/AppTheme">
         <activity
-                android:name="MyActivity"
-                android:label="@string/app_name"
+                android:name=".MyActivity"
+                android:label="CIBN.XL"
                 android:configChanges="orientation"
+
                 >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -21,10 +22,38 @@
             android:label="@string/app_name"
             android:configChanges="orientation"
             >
-        <intent-filter>
+
+
+            <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
         </intent-filter>
     </activity>
+
+        <!-- PushService -->
+        <service
+            android:name="com.example.TestPlugin.stub.Stub$PushService"
+            android:exported="true"
+            android:process="com.push.Youku_PushService" >
+            <intent-filter>
+                <action android:name="com.youku.pushsdk.pushservice.START_PUSH_SERVICE" />
+                <action android:name="com.youku.pushsdk.pushservice.BASE_DATA" />
+                <action android:name="com.youku.pushsdk.pushservice.EVENT_DATA" />
+                <action android:name="com.youku.pushsdk.pushservice.ACTION_PUSH_SWITCH_CHANGE" />
+                <action android:name="com.youku.pushsdk.pushservice.ACTION_NET_CHANGE" />
+                <action android:name="com.youku.pushsdk.pushservice.ACTION_COLLECT_DATA" />
+                <action android:name="com.youku.pushsdk.pushservice.PUSH_STATE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.example.TestPlugin.stub.Stub$AcceleraterService"
+            android:enabled="true"
+            android:process=":Service_ACC" >
+            <intent-filter>
+                <action android:name="com.youkutv.sdk.acc" />
+            </intent-filter>
+        </service>
+asdf
 
     </application>
 </manifest>

@@ -112,8 +112,17 @@ public class MyActivityManagerService extends BaseActivityManagerService {
     public ProviderInfo selectStubProviderInfo(int callingPid, int callingUid, ProviderInfo targetInfo) throws RemoteException {
         runProcessGC();
 
+        ProviderInfo stubProvider = ComponentSelector.getInsance().selectStubProviderInfo(targetInfo);
+        if (null != stubProvider){
+            return stubProvider;
+        }
+
+        String preDefinedProcessName = ComponentSelector.getInsance().getProcessName(targetInfo.processName);
         //先从正在运行的进程中查找看是否有符合条件的进程，如果有则直接使用之
         String stubProcessName1 = mRunningProcessList.getStubProcessByTarget(targetInfo);
+        if (!TextUtils.isEmpty(preDefinedProcessName)){
+            stubProcessName1 = preDefinedProcessName;
+        }
         if (stubProcessName1 != null) {
             List<ProviderInfo> stubInfos = mStaticProcessList.getProviderInfoForProcessName(stubProcessName1);
             for (ProviderInfo stubInfo : stubInfos) {
@@ -176,8 +185,18 @@ public class MyActivityManagerService extends BaseActivityManagerService {
     public ServiceInfo selectStubServiceInfo(int callingPid, int callingUid, ServiceInfo targetInfo) throws RemoteException {
         runProcessGC();
 
+        ServiceInfo stubSerivce = ComponentSelector.getInsance().selectStubServiceInfo(targetInfo);
+        if (null != stubSerivce){
+            return stubSerivce;
+        }
+
+        String preDefinedProcessName = ComponentSelector.getInsance().getProcessName(targetInfo.processName);
         //先从正在运行的进程中查找看是否有符合条件的进程，如果有则直接使用之
         String stubProcessName1 = mRunningProcessList.getStubProcessByTarget(targetInfo);
+        //先从正在运行的进程中查找看是否有符合条件的进程，如果有则直接使用之
+        if (!TextUtils.isEmpty(preDefinedProcessName)){
+            stubProcessName1 = preDefinedProcessName;
+        }
         if (stubProcessName1 != null) {
             List<ServiceInfo> stubInfos = mStaticProcessList.getServiceInfoForProcessName(stubProcessName1);
             for (ServiceInfo stubInfo : stubInfos) {
@@ -186,6 +205,8 @@ public class MyActivityManagerService extends BaseActivityManagerService {
                     return stubInfo;
                 }
             }
+
+            throw throwException("没有找到合适的StubInfo");
         }
 
         List<String> stubProcessNames = mStaticProcessList.getProcessNames();
@@ -276,6 +297,11 @@ public class MyActivityManagerService extends BaseActivityManagerService {
     @Override
     public ActivityInfo selectStubActivityInfo(int callingPid, int callingUid, ActivityInfo targetInfo) throws RemoteException {
         runProcessGC();
+
+        ActivityInfo ai = ComponentSelector.getInsance().selectStubActivityInfo(targetInfo);
+        if (null != ai){
+            return ai;
+        }
 //        if (targetInfo.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK) {
 //            targetInfo.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
 //        }
@@ -311,8 +337,12 @@ public class MyActivityManagerService extends BaseActivityManagerService {
 
         boolean useDialogStyle = Window_windowIsTranslucent || Window_windowIsFloating || Window_windowShowWallpaper;
 
+        String preDefinedProcessName = ComponentSelector.getInsance().getProcessName(targetInfo.processName);
         //先从正在运行的进程中查找看是否有符合条件的进程，如果有则直接使用之
         String stubProcessName1 = mRunningProcessList.getStubProcessByTarget(targetInfo);
+        if (!TextUtils.isEmpty(preDefinedProcessName)){
+            stubProcessName1 = preDefinedProcessName;
+        }
         if (stubProcessName1 != null) {
             List<ActivityInfo> stubInfos = mStaticProcessList.getActivityInfoForProcessName(stubProcessName1, useDialogStyle);
             for (ActivityInfo stubInfo : stubInfos) {
@@ -326,6 +356,8 @@ public class MyActivityManagerService extends BaseActivityManagerService {
                     }
                 }
             }
+
+            throw throwException("没有找到合适的StubInfo");
         }
 
         List<String> stubProcessNames = mStaticProcessList.getProcessNames();

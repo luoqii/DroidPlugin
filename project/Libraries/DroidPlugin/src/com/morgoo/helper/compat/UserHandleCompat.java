@@ -42,4 +42,14 @@ public class UserHandleCompat {
         }
         return 0;
     }
+
+    //public static final int myUserId()
+    public static int myUserId(){
+        try {
+            return (int) MethodUtils.invokeStaticMethod(UserHandle.class, "myUserId");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

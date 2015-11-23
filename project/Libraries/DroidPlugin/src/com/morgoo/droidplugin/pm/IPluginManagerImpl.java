@@ -1201,7 +1201,9 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
 
     @Override
     public ActivityInfo selectStubActivityInfo(ActivityInfo pluginInfo) throws RemoteException {
-        return mActivityManagerService.selectStubActivityInfo(Binder.getCallingPid(), Binder.getCallingUid(), pluginInfo);
+        ActivityInfo stubInfo =  mActivityManagerService.selectStubActivityInfo(Binder.getCallingPid(), Binder.getCallingUid(), pluginInfo);
+        Log.d(TAG, "stubInfo:" + stubInfo.name + " ==> targetInfo:" + pluginInfo.name);
+        return stubInfo;
     }
 
     @Override
@@ -1224,7 +1226,9 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
 
     @Override
     public ServiceInfo selectStubServiceInfo(ServiceInfo targetInfo) throws RemoteException {
-        return mActivityManagerService.selectStubServiceInfo(Binder.getCallingPid(), Binder.getCallingUid(), targetInfo);
+        ServiceInfo stubInfo =  mActivityManagerService.selectStubServiceInfo(Binder.getCallingPid(), Binder.getCallingUid(), targetInfo);
+        Log.d(TAG, "stubInfo:" + stubInfo.name + " ==> targetInfo:" + targetInfo.name);
+        return stubInfo;
     }
 
     @Override
