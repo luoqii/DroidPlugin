@@ -1062,16 +1062,33 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
     }
 
     private String findSoPath(Set<String> soPaths) {
-        if (soPaths != null && soPaths.size() > 0) {
-            for (String soPath : soPaths) {
-                if (!TextUtils.isEmpty(Build.CPU_ABI) && soPath.contains(Build.CPU_ABI)) {
-                    return soPath;
+        if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP ) {
+            if (soPaths != null && soPaths.size() > 0) {
+                for (String soPath : soPaths) {
+                    if (!TextUtils.isEmpty(Build.CPU_ABI) && soPath.contains(Build.CPU_ABI)) {
+                        return soPath;
+                    }
+                }
+
+                for (String soPath : soPaths) {
+                    if (!TextUtils.isEmpty(Build.CPU_ABI2) && soPath.contains(Build.CPU_ABI2)) {
+                        return soPath;
+                    }
                 }
             }
-
-            for (String soPath : soPaths) {
-                if (!TextUtils.isEmpty(Build.CPU_ABI2) && soPath.contains(Build.CPU_ABI2)) {
-                    return soPath;
+        } else {
+            if (soPaths != null && soPaths.size() > 0) {
+                String[] supportAbis = Build.SUPPORTED_ABIS;
+                if (supportAbis != null && supportAbis.length > 0) {
+                    int i = supportAbis.length - 1;
+                    for (; i >= 0; i--) {
+                        String abi = supportAbis[i];
+                        for (String soPath : soPaths) {
+                            if (!TextUtils.isEmpty(abi) && soPath.contains(abi)) {
+                                return soPath;
+                            }
+                        }
+                    }
                 }
             }
         }
