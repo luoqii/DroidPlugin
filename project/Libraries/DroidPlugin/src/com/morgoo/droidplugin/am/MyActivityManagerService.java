@@ -275,6 +275,11 @@ public class MyActivityManagerService extends BaseActivityManagerService {
     @Override
     public ActivityInfo selectStubActivityInfo(int callingPid, int callingUid, ActivityInfo targetInfo) throws RemoteException {
         runProcessGC();
+
+        ActivityInfo ai = ComponentSelector.getInsance().selectStubActivityInfo(targetInfo);
+        if (null != ai){
+            return ai;
+        }
 //        if (targetInfo.launchMode == ActivityInfo.LAUNCH_SINGLE_TASK) {
 //            targetInfo.launchMode = ActivityInfo.LAUNCH_MULTIPLE;
 //        }
