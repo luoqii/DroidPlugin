@@ -64,6 +64,7 @@ public class Log {
     static {
         sFileLog = sDir.exists() && sDir.isDirectory();
         sDebug = sFileLog;
+        sDebug = true;
     }
 
     public static boolean isDebug() {

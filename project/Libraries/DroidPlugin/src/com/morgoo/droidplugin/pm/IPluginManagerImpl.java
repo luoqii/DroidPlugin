@@ -153,7 +153,7 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "scan a apk file error", e);
+//            Log.e(TAG, "scan a apk file error", e);
         }
 
         Log.i(TAG, "Search apk cost %s ms", (System.currentTimeMillis() - b));
@@ -830,6 +830,7 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
             PackageManager pm = mContext.getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(filepath, 0);
             if (info == null) {
+                Log.e(TAG, "install plugin fail invlid apk.");
                 return PackageManagerCompat.INSTALL_FAILED_INVALID_APK;
             }
 
@@ -870,9 +871,11 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
                 mPluginCache.put(parser.getPackageName(), parser);
                 mActivityManagerService.onPkgInstalled(mPluginCache, parser, parser.getPackageName());
                 sendInstalledBroadcast(info.packageName);
+                Log.i(TAG, "install plugin success. file: " + filepath);
                 return PackageManagerCompat.INSTALL_SUCCEEDED;
             } else {
                 if (mPluginCache.containsKey(info.packageName)) {
+                    Log.i(TAG, "install plugin ignore, plugin has already exist, packageName: " + info.packageName);
                     return PackageManagerCompat.INSTALL_FAILED_ALREADY_EXISTS;
                 } else {
                     forceStopPackage(info.packageName);
@@ -889,8 +892,8 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
                             } catch (NameNotFoundException e) {
                             }
                             if (!mHostRequestedPermission.contains(requestedPermission) && b) {
-                                Log.e(TAG, "No Permission %s", requestedPermission);
                                 new File(apkfile).delete();
+                                Log.e(TAG, "install plugin fail, no Permission " + requestedPermission);
                                 return PluginManager.INSTALL_FAILED_NO_REQUESTEDPERMISSION;
                             }
                         }
@@ -907,6 +910,7 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
                     mPluginCache.put(parser.getPackageName(), parser);
                     mActivityManagerService.onPkgInstalled(mPluginCache, parser, parser.getPackageName());
                     sendInstalledBroadcast(info.packageName);
+                    Log.i(TAG, "install plugin success. file: " + filepath);
                     return PackageManagerCompat.INSTALL_SUCCEEDED;
                 }
             }
@@ -915,6 +919,7 @@ public class IPluginManagerImpl extends IPluginManager.Stub {
                 new File(apkfile).delete();
             }
             handleException(e);
+            Log.e(TAG, "install plugin fail.", e);
             return PackageManagerCompat.INSTALL_FAILED_INTERNAL_ERROR;
         }
     }
